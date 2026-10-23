@@ -1,4 +1,4 @@
-# PairOnce protocol 2.1.2 (2026-10-23)
+# PairOnce protocol 2.2.0 (2026-10-23)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
 browsers find each other; when a direct path fails, a TURN relay forwards their traffic. Neither service can read what is
@@ -8,7 +8,7 @@ This document describes what goes over the wire. It is written so that someone c
 that someone can run a PairOnce service. Licensed CC BY 4.0. The reference implementation of everything here is the
 `@paironce/core` package (Apache-2.0).
 
-This version describes paironce.com 2.1.2 and `@paironce/core` 2.1.2, in production since 2026-10-23. Corrections are
+This version describes paironce.com 2.2.0 and `@paironce/core` 2.2.0, in production since 2026-10-23. Corrections are
 welcome as issues or pull requests.
 
 ## 1. Devices
@@ -57,8 +57,9 @@ Over the room's WebSocket, each side sends JSON messages (`v: 1`):
 
 - `hello` — `role` (`host` | `join`), a fresh 16-byte `sessionNonce` (base64url, 22 chars), the device descriptor, and
   optional feature flags: `capabilities` (a list, bound into the frame key, see 5.2), `safetyCode: 2`,
-  `frameProtocol: 2`, `binaryFileChunks: 1`, `largeFiles: 1`, `receiveWindow: 1`. A flag is used only when both hellos
-  carry it, so an older peer keeps working without it.
+  `frameProtocol: 2`, `binaryFileChunks: 1`, `largeFiles: 1`, `hugeFiles: 1`, `receiveWindow: 1`, and `pro: 1` when the
+  device has PairOnce Pro. A flag is used only when both hellos carry it (`pro` only needs one side), so an older peer
+  keeps working without it.
 - `offer` / `answer` — the WebRTC session description, with the sender's `sessionNonce`.
 - `ice` — ICE candidates.
 
@@ -175,8 +176,9 @@ ciphertext, plainSize }`); and the file frames `file-meta`, `file-chunk`, `file-
 **Resume.** If the connection drops, the receiver keeps what arrived (for 30 minutes, at most three files) and, on
 reconnecting with the same device, asks for the rest; the sender's `file-meta` then carries `resumeFrom`.
 
-**Limits.** Up to 2 GB per file when the receiving browser writes to disk (Origin Private File System), else 50 MiB per
-file and 100 MiB per page. Text up to 128 KiB per message.
+**Limits.** Up to 2 GB per file when the receiving browser writes to disk (Origin Private File System), and up to 10 GB
+(`MAX_FILE_BYTES`) when the receiver also announces `hugeFiles` and either device announces `pro`; else 50 MiB per file
+and 100 MiB per page. Text up to 128 KiB per message.
 
 ## 7. Later connections
 
