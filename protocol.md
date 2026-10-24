@@ -1,4 +1,4 @@
-# PairOnce protocol 2.7.1 (2026-10-23)
+# PairOnce protocol 2.8.0 (2026-10-23)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
 browsers find each other; when a direct path fails, a TURN relay forwards their traffic. Neither service can read what is
@@ -8,7 +8,7 @@ This document describes what goes over the wire. It is written so that someone c
 that someone can run a PairOnce service. Licensed CC BY 4.0. The reference implementation of everything here is the
 `@paironce/core` package (Apache-2.0).
 
-This version describes paironce.com 2.7.1 and `@paironce/core` 2.7.1, in production since 2026-10-23. Corrections are
+This version describes paironce.com 2.8.0 and `@paironce/core` 2.8.0, in production since 2026-10-23. Corrections are
 welcome as issues or pull requests.
 
 ## 1. Devices
