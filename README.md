@@ -8,7 +8,7 @@ between can and cannot see.
 - [protocol.md](protocol.md): devices, invitations, pairing, the safety code, key derivation, frames, sending a file
 - [threat-model.md](threat-model.md): what is protected, from whom, and where the protection stops
 
-Version 2.13.3 describes paironce.com 2.13.3. The reference implementation is [@paironce/core](https://github.com/paironce/core).
+Version 2.13.4 describes paironce.com 2.13.4. The reference implementation is [@paironce/core](https://github.com/paironce/core).
 Questions and corrections are welcome as issues. Security problems: see [SECURITY](https://github.com/paironce/security/blob/main/SECURITY.md).
 
 ## License
