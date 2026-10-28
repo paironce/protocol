@@ -1,4 +1,4 @@
-# PairOnce protocol 2.19.1 (2026-10-23)
+# PairOnce protocol 2.19.2 (2026-10-23)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
 browsers find each other; when a direct path fails, a TURN relay forwards their traffic. Neither service can read what is
@@ -8,7 +8,7 @@ This document describes what goes over the wire. It is written so that someone c
 that someone can run a PairOnce service. Licensed CC BY 4.0. The reference implementation of everything here is the
 `@paironce/core` package (Apache-2.0).
 
-This version describes paironce.com 2.19.1 and `@paironce/core` 2.19.1, in production since 2026-10-23. Corrections are
+This version describes paironce.com 2.19.2 and `@paironce/core` 2.19.2, in production since 2026-10-23. Corrections are
 welcome as issues or pull requests.
 
 ## 1. Devices
@@ -144,7 +144,9 @@ frame it has already accepted (replay).
 
 JSON frames (`v: 1`): `text`; the control frames `pair-claim`, `pair-result`, `pair-confirm`, `file-offer`,
 `file-decision`, `file-cancel`, `file-receipt`, `file-progress`, `file-preview` (each `{ transferId, noncePrefix,
-ciphertext, plainSize }`); and the file frames `file-meta`, `file-chunk`, `file-complete`, `file-ack`.
+ciphertext, plainSize }`); and the file frames `file-meta`, `file-chunk`, `file-complete`, `file-ack`. A `noncePrefix`
+is always 8 random bytes in base64url (11 characters); since 2.19.2 a frame with any other length is not parsed, and a
+control frame is remembered against replay only after it decrypts.
 
 **Binary file chunks** (when both hellos carry `binaryFileChunks: 1`), big-endian:
 
