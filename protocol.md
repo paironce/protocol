@@ -193,6 +193,19 @@ two remembered keys, so the signaling service cannot step in.
 | Signaling (Cloudflare Workers, Durable Objects) | room IDs, hello messages (device descriptors, nonces, flags), SDP and ICE candidates (so IP addresses), timing; for six-digit codes also the invitation nonce and host descriptor | the device private keys; any frame key; file contents, names, text |
 | TURN relay (Cloudflare Realtime TURN), only when a direct path fails | the two IP addresses, how many bytes pass, when | anything inside the DTLS-encrypted DataChannel |
 
+### Device proof for paid relay (since 2.19.0)
+
+A device ID is public (peers and connection codes show it), so the service does not take it as proof of anything that
+costs money. The service publishes an ECDH P-256 public key in `/api/config` (`deviceClaimKey`). A page adds to its
+signaling URL its device public key, the time, and a MAC from `deviceClaimProof` in `device-claim.ts`: HKDF-SHA-256 over
+the ECDH secret of the device private key and the service key (zero salt, info `paironce-device-claim-v1`), HMAC-SHA-256
+over `["signal", session, deviceId, devicePublicKey, serviceKey, time]`. The service derives the same secret from its
+private key and the device public key. Pro activation sends the same kind of proof with purpose `activate` and the license
+code. The service grants the Pro relay allowance, spends relay packs and moves a device between licenses only for a device
+whose proof matches the public key bound to its ID; it keeps that public key with the license. A proof is accepted for a
+day and only for its session or code. It proves possession of the device key to the service; it does not give the service
+any key that opens frames.
+
 ## 9. Versioning
 
 `v: 1` is the signaling and frame envelope version. Pairing is `safetyCode: 2` and the live channel is
