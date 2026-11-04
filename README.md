@@ -14,6 +14,8 @@ between can and cannot see.
 
 - [protocol.md](protocol.md): devices, invitations, pairing, the safety code, key derivation, frames, sending a file
 - [threat-model.md](threat-model.md): what is protected, from whom, and where the protection stops
+- [agent-as-a-device.md](agent-as-a-device.md): AI agents (Claude Code, Cursor, CI jobs) as paired devices: what works
+  today with the [paironce CLI](https://github.com/paironce/cli) and its MCP server, and what is proposed next
 
 Version 2.22.0 describes paironce.com 2.22.0. The reference implementation is [@paironce/core](https://github.com/paironce/core).
 Questions and corrections are welcome as issues. Security problems: see [SECURITY](https://github.com/paironce/security/blob/main/SECURITY.md).
