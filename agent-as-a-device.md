@@ -1,6 +1,6 @@
 # Agent as a Device
 
-Design note, draft 4 (2026-11-05). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
+Design note, draft 4 (2026-11-04). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
 
 An AI agent that runs in a terminal or a cloud sandbox (Claude Code, Cursor, Codex, a CI job) can write files, run
 builds and read logs, but it cannot reach the person's phone: a finished build does not land on the phone, a photo of a
