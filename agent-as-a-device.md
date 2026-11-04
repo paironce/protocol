@@ -1,6 +1,6 @@
 # Agent as a Device
 
-Design note, draft 2 (2026-11-04). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
+Design note, draft 3 (2026-11-04). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
 
 An AI agent that runs in a terminal or a cloud sandbox (Claude Code, Cursor, Codex, a CI job) can write files, run
 builds and read logs, but it cannot reach the person's phone: a finished build does not land on the phone, a photo of a
@@ -59,14 +59,17 @@ nothing: it is then shown and kept like any other device, which is today's behav
 
 ## 4. Capabilities
 
-**Shipped:** `pair_device`, `send_file`, `send_text`, `receive_files`, `list_devices` (section 2).
+**Shipped:** `pair_device`, `send_file`, `send_text`, `receive_files`, `list_devices` (section 2), and since CLI 0.6 with
+paironce.com 2.24.0 (protocol section 7.3):
+
+- `request_file`, `request_photo`, `request_scan`: the agent asks for something specific ("a photo of the label on the
+  back of the router"). The person's device shows the request with the agent's name, the Agent mark and its stated
+  purpose; the person answers by taking the photo, scanning pages with the existing scanner or choosing a file, or
+  declines. A request is never answered automatically. The agent takes exactly the files the answer announces; without an
+  answer in time it withdraws the request.
 
 **Proposed:**
 
-- `request_file`, `request_photo`, `request_scan`: the agent asks for something specific ("a photo of the label on the
-  back of the router"). The person's device shows the request with the agent's name and its stated purpose; the person
-  answers by taking the photo, scanning pages with the existing scanner or choosing a file, or declines. A request is
-  never answered automatically.
 - `watch_frames`: still pictures from the person's live camera or screen, at most a few per second, taken with the
   existing full-resolution still and only while the person keeps the live picture on. Stills rather than a video stream,
   so the agent side needs no video decoder.
@@ -105,7 +108,7 @@ Agent-to-agent connections between two fresh identities stay within the network 
 | A hijacked or prompt-injected agent tries to send files out, or to put files on the person's device | Every file is accepted on the receiving device; the agent reaches only devices the person paired; requests always need the person. |
 | Someone pairs a device that pretends to be the person's agent | The safety code is compared on both screens; the pairing code comes from the person's own device; the "Agent" mark is shown on the person's side. |
 | A sandbox is reused by someone else and finds the old identity | `PAIRONCE_HOME` inside the sandbox, `--ephemeral`, `forgetAfter`, and removal from the person's device at any time. |
-| Flooding the person with requests | Requests are rate-limited per paired agent and can be switched off per agent on the person's device. |
+| Flooding the person with requests | At most 3 open requests per connection and 10 in 10 minutes; more are declined without being shown (shipped). A per-agent switch on the person's device is proposed. |
 | The service reads what passes through the tunnel | It cannot: frames are encrypted end to end with keys derived on the two devices (protocol sections 5 and 7.1). |
 
 ## 9. Non-goals
@@ -129,7 +132,7 @@ Agent-to-agent connections between two fresh identities stay within the network 
 | v0 | CLI: pair, send, text, receive | Shipped (CLI 0.1, 2026-11-04) |
 | v1 | MCP: send tools, `pair_device`, `receive_files`, device names; relay over TCP/TLS; the PairOnce tunnel and proxies | Shipped (CLI 0.4, paironce.com 2.22.0) |
 | v2 | `deviceKind`, `forgetAfter`, `--ephemeral`, the agent allowance rule | Shipped (CLI 0.5, paironce.com 2.23.0) |
-| v3 | `request_file`, `request_photo`, `request_scan` | Proposed |
+| v3 | `request_file`, `request_photo`, `request_scan` | Shipped (CLI 0.6, paironce.com 2.24.0) |
 | v4 | `watch_frames` | Proposed |
 
 Comments and corrections are welcome as issues on [paironce/protocol](https://github.com/paironce/protocol).

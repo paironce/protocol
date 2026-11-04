@@ -1,4 +1,4 @@
-# PairOnce threat model 2.23.0 (2026-10-23)
+# PairOnce threat model 2.24.0 (2026-10-23)
 
 What PairOnce protects, from whom, and where the protection stops. Read with the protocol description (`protocol.md`).
 

@@ -1,4 +1,4 @@
-# PairOnce protocol 2.23.0 (2026-11-04)
+# PairOnce protocol 2.24.0 (2026-11-04)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
 browsers find each other; when a direct path fails, a TURN relay forwards their traffic, and when that fails too, the
@@ -8,7 +8,7 @@ This document describes what goes over the wire. It is written so that someone c
 that someone can run a PairOnce service. Licensed CC BY 4.0. The reference implementation of everything here is the
 `@paironce/core` package (Apache-2.0).
 
-This version describes paironce.com 2.23.0, in production since 2026-11-04; `@paironce/core` is unchanged since 2.1.0. Corrections are
+This version describes paironce.com 2.24.0, in production since 2026-11-04; `@paironce/core` is unchanged since 2.1.0. Corrections are
 welcome as issues or pull requests.
 
 ## 1. Devices
@@ -217,6 +217,23 @@ not connected for `forgetAfter` seconds. The service keeps the flag for the life
 agent's relay and tunnel use by the remaining allowance of the person's device it is connected to. Both fields only
 limit or mark a pairing; a device that leaves them out is treated as before.
 
+### 7.3 Requests (since 2.24.0)
+
+A device that shows requests sends `requests: 1` in its hello. The other device (usually an agent) may then ask it for a
+file, a photo or a scan with a `request` frame: an encrypted control frame like the others in section 5.3, frame type
+`request`, carrying one JSON object:
+
+- `{"op":"ask","id","kind":"file"|"photo"|"scan","purpose"}`: `purpose` is the asker's reason in at most 300 characters,
+  shown as plain text.
+- `{"op":"answer","id","decision":"decline"|"send","count"}`: the person declined, or is about to offer `count` files
+  (1 to 20) in answer. The asker may take exactly that many offers without asking the person again; the files then go as
+  any other file, accepted on the asking side.
+- `{"op":"withdraw","id"}`: the asker no longer waits; the request disappears from the other device.
+
+The device that shows requests answers only by the person's action: taking a photo, scanning, choosing files or
+declining. It shows at most 3 open requests from one connection and 10 in 10 minutes, and declines more without showing
+them. Nothing else in the payload is accepted.
+
 ## 8. What the services see
 
 | Service | Sees | Does not see |
@@ -245,6 +262,8 @@ any key that opens frames.
 used only when both sides send it.
 
 ## 10. Change log
+
+- 2026-11-04 (paironce.com 2.24.0): requests (section 7.3), hello flag `requests: 1` and frame type `request`.
 
 - 2026-11-04 (paironce.com 2.23.0): agents (section 7.2), hello fields `deviceKind` and `forgetAfter`. The room charges
   tunnel bytes on the measured path, so they count whatever the relay provider.
