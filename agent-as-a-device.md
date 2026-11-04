@@ -100,7 +100,8 @@ the protocol. A sandbox usually has no local network, so most agent connections 
 
 **Shipped.** Relayed and tunnelled bytes count against each side's monthly relay allowance (200 MB per device, 5 GB with
 PairOnce Pro; a network has its own monthly cap), measured by the service for the tunnel. A connection where either device
-has Pro counts as Pro.
+has Pro counts as Pro: since paironce.com 2.27.0 the other device's bytes count on one allowance of the Pro device, so a new
+identity brings no new allowance there either.
 
 **Shipped (paironce.com 2.23.0).** A fresh identity for every sandbox does not mean a fresh free allowance every time.
 Bytes already count against both devices of a connection, so an agent cannot use more of a person's device's allowance
