@@ -1,6 +1,6 @@
 # Agent as a Device
 
-Design note, draft 4 (2026-11-04). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
+Design note, draft 5 (2026-11-04). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
 
 An AI agent that runs in a terminal or a cloud sandbox (Claude Code, Cursor, Codex, a CI job) can write files, run
 builds and read logs, but it cannot reach the person's phone: a finished build does not land on the phone, a photo of a
@@ -25,7 +25,7 @@ file. Nothing about the protocol changes for the person's device except what it 
 
   | Tool | What it does |
   | --- | --- |
-  | `pair_device` | The person opens paironce.com on their device and reads out the six-digit code; the agent joins with it. The person compares the safety code and approves the agent on their own device. |
+  | `pair_device` | The agent shows a six-digit code; the person types it at paironce.com on their own device. The agent tells the person the safety code and approves only after they say it matches (since CLI 0.8; before that the agent joined a code the person read out). |
   | `send_file`, `send_text` | Send to a paired device. The person accepts each file there. |
   | `receive_files` | Wait while the person sends files from their device; they are saved in the agent's `./inbox`. |
   | `list_devices` | The devices this agent is paired with. |
@@ -79,8 +79,10 @@ and since CLI 0.7 with paironce.com 2.25.0 (protocol section 7.4):
 
 ## 5. Consent model
 
-- Pairing: the safety code is compared on both screens and the person approves the agent on their own device. The agent
-  cannot approve itself.
+- Pairing: the person types the agent's code on their own device, which marks it as an agent, and compares the safety code.
+  The code goes out only through the person, so the person's device is the only one that can join. An agent never joins a
+  code it read somewhere: that would pair it with whoever showed the code, approved over there, with the person not
+  involved. `paironce pair <code>` is for a person at a terminal, and refuses without one.
 - Every file sent to the person's device is accepted there, file by file. A per-device "accept automatically from this
   agent" switch is off by default.
 - Every `request_*` and every watch needs the person's action on their device, every time; there is no switch to turn
@@ -114,6 +116,7 @@ Agent-to-agent connections between two fresh identities stay within the network 
 | Someone pairs a device that pretends to be the person's agent | The safety code is compared on both screens; the pairing code comes from the person's own device; the "Agent" mark is shown on the person's side. |
 | A sandbox is reused by someone else and finds the old identity | `PAIRONCE_HOME` inside the sandbox, `--ephemeral`, `forgetAfter`, and removal from the person's device at any time. |
 | Flooding the person with requests | At most 3 open requests per connection and 10 in 10 minutes; more are declined without being shown. A per-agent switch on the person's device turns its requests off (both shipped). |
+| An injected agent pairs with an attacker's device to send files out | `pair_device` takes no code, so the agent can only show one, and nothing but the person carries it out. An agent that can run any program on an open network can always send files somewhere; allowing paironce.com in a sandbox's allow-list opens one more such way for an agent that can run code, as allowing any file service would. |
 | An agent keeps watching longer than meant | The person's device shows the share with a stop button the whole time; a still goes out only when asked, at most two a second; the watch ends after 15 minutes. |
 | The service reads what passes through the tunnel | It cannot: frames are encrypted end to end with keys derived on the two devices (protocol sections 5 and 7.1). |
 
