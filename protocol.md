@@ -1,4 +1,4 @@
-# PairOnce protocol 2.24.0 (2026-11-04)
+# PairOnce protocol 2.25.0 (2026-11-05)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
 browsers find each other; when a direct path fails, a TURN relay forwards their traffic, and when that fails too, the
@@ -8,7 +8,7 @@ This document describes what goes over the wire. It is written so that someone c
 that someone can run a PairOnce service. Licensed CC BY 4.0. The reference implementation of everything here is the
 `@paironce/core` package (Apache-2.0).
 
-This version describes paironce.com 2.24.0, in production since 2026-11-04; `@paironce/core` is unchanged since 2.1.0. Corrections are
+This version describes paironce.com 2.25.0, in production since 2026-11-05; `@paironce/core` is unchanged since 2.1.0. Corrections are
 welcome as issues or pull requests.
 
 ## 1. Devices
@@ -234,6 +234,22 @@ The device that shows requests answers only by the person's action: taking a pho
 declining. It shows at most 3 open requests from one connection and 10 in 10 minutes, and declines more without showing
 them. Nothing else in the payload is accepted.
 
+### 7.4 Watching (since 2.25.0)
+
+A device that shows requests and also sends `watch: 1` in its hello takes a request to see its camera or screen: an
+`ask` of kind `"watch"`, with the asker's reason. The person answers by sharing the camera or the screen on that device
+for it (`{"op":"answer","id","decision":"watch"}`), or declines. No video track is added and no media is negotiated;
+the picture stays on the person's device, which shows it with the name of the device watching and a stop button.
+
+- `{"op":"still","id"}`: the asker wants a picture now.
+- `{"op":"still-file","id","transferId"}`: the answer; the device then sends that still as an ordinary file (section 6)
+  with that transfer ID, a JPEG at most 1568 pixels on its longest side, which the asker takes without asking.
+- `{"op":"stop","id"}`: either side ends it.
+
+The sharing device sends at most one still per 500 ms and ends a watch after 15 minutes; one watch at a time per
+connection, and a request to watch counts like the other requests. Stills over the relay or the tunnel count against the
+allowance like any relayed byte.
+
 ## 8. What the services see
 
 | Service | Sees | Does not see |
@@ -262,6 +278,9 @@ any key that opens frames.
 used only when both sides send it.
 
 ## 10. Change log
+
+- 2026-11-05 (paironce.com 2.25.0): watching (section 7.4), hello flag `watch: 1`, request kind `"watch"`, answer
+  decision `"watch"` and the request operations `still`, `still-file` and `stop`.
 
 - 2026-11-04 (paironce.com 2.24.0): requests (section 7.3), hello flag `requests: 1` and frame type `request`.
 

@@ -1,6 +1,6 @@
 # Agent as a Device
 
-Design note, draft 3 (2026-11-04). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
+Design note, draft 4 (2026-11-05). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
 
 An AI agent that runs in a terminal or a cloud sandbox (Claude Code, Cursor, Codex, a CI job) can write files, run
 builds and read logs, but it cannot reach the person's phone: a finished build does not land on the phone, a photo of a
@@ -68,11 +68,14 @@ paironce.com 2.24.0 (protocol section 7.3):
   declines. A request is never answered automatically. The agent takes exactly the files the answer announces; without an
   answer in time it withdraws the request.
 
-**Proposed:**
+and since CLI 0.7 with paironce.com 2.25.0 (protocol section 7.4):
 
-- `watch_frames`: still pictures from the person's live camera or screen, at most a few per second, taken with the
-  existing full-resolution still and only while the person keeps the live picture on. Stills rather than a video stream,
-  so the agent side needs no video decoder.
+- `watch_frames`, `watch_stop`: the agent asks to see the person's camera or screen, with its reason. The person shares
+  the camera or the screen on their device for it, or declines; their device shows what it shares, how many stills went
+  out and a stop button. Each `watch_frames` call then returns new stills (JPEG, at most 1568 pixels on the longest side,
+  at most two a second) as images the agent looks at, so it can guide the person step by step. Stills rather than a
+  video stream, so the agent side needs no video decoder and nothing is sent between calls. It ends when either side
+  stops it, after 5 minutes without a call, or after 15 minutes.
 
 ## 5. Consent model
 
@@ -80,7 +83,9 @@ paironce.com 2.24.0 (protocol section 7.3):
   cannot approve itself.
 - Every file sent to the person's device is accepted there, file by file. A per-device "accept automatically from this
   agent" switch is off by default.
-- Every `request_*` needs the person's action on their device, every time; there is no switch to turn that off.
+- Every `request_*` and every watch needs the person's action on their device, every time; there is no switch to turn
+  that off. The person can switch an agent's requests off instead, from the request itself or in that device's options:
+  its requests are then declined without being shown (shipped in paironce.com 2.25.0).
 - The person's device keeps a short history of what the agent sent and asked for, on that device only.
 
 ## 6. Transport
@@ -108,7 +113,8 @@ Agent-to-agent connections between two fresh identities stay within the network 
 | A hijacked or prompt-injected agent tries to send files out, or to put files on the person's device | Every file is accepted on the receiving device; the agent reaches only devices the person paired; requests always need the person. |
 | Someone pairs a device that pretends to be the person's agent | The safety code is compared on both screens; the pairing code comes from the person's own device; the "Agent" mark is shown on the person's side. |
 | A sandbox is reused by someone else and finds the old identity | `PAIRONCE_HOME` inside the sandbox, `--ephemeral`, `forgetAfter`, and removal from the person's device at any time. |
-| Flooding the person with requests | At most 3 open requests per connection and 10 in 10 minutes; more are declined without being shown (shipped). A per-agent switch on the person's device is proposed. |
+| Flooding the person with requests | At most 3 open requests per connection and 10 in 10 minutes; more are declined without being shown. A per-agent switch on the person's device turns its requests off (both shipped). |
+| An agent keeps watching longer than meant | The person's device shows the share with a stop button the whole time; a still goes out only when asked, at most two a second; the watch ends after 15 minutes. |
 | The service reads what passes through the tunnel | It cannot: frames are encrypted end to end with keys derived on the two devices (protocol sections 5 and 7.1). |
 
 ## 9. Non-goals
@@ -122,7 +128,6 @@ Agent-to-agent connections between two fresh identities stay within the network 
 
 - The allowance of a device that declares `deviceKind: "agent"` when its person's device is offline.
 - The approval interface when several agents are paired at once.
-- The still rate and resolution for `watch_frames`.
 - Whether an agent may open a distribution room (today rooms are same-network only and have no relay).
 
 ## 11. Roadmap
@@ -133,6 +138,6 @@ Agent-to-agent connections between two fresh identities stay within the network 
 | v1 | MCP: send tools, `pair_device`, `receive_files`, device names; relay over TCP/TLS; the PairOnce tunnel and proxies | Shipped (CLI 0.4, paironce.com 2.22.0) |
 | v2 | `deviceKind`, `forgetAfter`, `--ephemeral`, the agent allowance rule | Shipped (CLI 0.5, paironce.com 2.23.0) |
 | v3 | `request_file`, `request_photo`, `request_scan` | Shipped (CLI 0.6, paironce.com 2.24.0) |
-| v4 | `watch_frames` | Proposed |
+| v4 | `watch_frames`, `watch_stop`; the per-agent request switch | Shipped (CLI 0.7, paironce.com 2.25.0) |
 
 Comments and corrections are welcome as issues on [paironce/protocol](https://github.com/paironce/protocol).
