@@ -1,14 +1,14 @@
-# PairOnce protocol 2.21.1 (2026-10-23)
+# PairOnce protocol 2.22.0 (2026-11-04)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
-browsers find each other; when a direct path fails, a TURN relay forwards their traffic. Neither service can read what is
-sent: every file chunk, text and control message is encrypted by the two browsers with keys the services never see.
+browsers find each other; when a direct path fails, a TURN relay forwards their traffic, and when that fails too, the
+pairing room passes the same encrypted frames over WebSockets (section 7.1). No service can read what is sent: every file chunk, text and control message is encrypted by the two browsers with keys the services never see.
 
 This document describes what goes over the wire. It is written so that someone can check the privacy claims, not so
 that someone can run a PairOnce service. Licensed CC BY 4.0. The reference implementation of everything here is the
 `@paironce/core` package (Apache-2.0).
 
-This version describes paironce.com 2.21.1 and `@paironce/core` 2.21.1, in production since 2026-10-23. Corrections are
+This version describes paironce.com 2.22.0, in production since 2026-11-04; `@paironce/core` is unchanged since 2.1.0. Corrections are
 welcome as issues or pull requests.
 
 ## 1. Devices
@@ -188,12 +188,33 @@ Paired devices reconnect without a code. They meet in a room again; each side al
 the first pairing and refuses a hello whose descriptor does not match it. The session secret (5.1) comes from ECDH of the
 two remembered keys, so the signaling service cannot step in.
 
+### 7.1 The WebSocket tunnel (since 2.22.0)
+
+Some networks let only web traffic out, through a proxy, so neither a direct path nor the TURN relay can form. Both
+hellos may carry `tunnel: 1`. When both do and the TURN attempt fails (or no relay credential can be had), each page
+opens a WebSocket to `/v1/pair/<room>/tunnel?session=<its signaling session>` and uses it in place of the DataChannel:
+the same frames (sections 5.3 and 6), encrypted with the same frame keys, in the same order.
+
+- The room accepts a tunnel only for a session that is in the room, with the other page present, devices that are not
+  revoked and relay allowance left; one per session. When the first page arrives, the room tells the other page on its
+  signaling socket (`{"v":1,"type":"tunnel-requested"}`), because that page's connection attempt may never fail on its
+  own. When both are there, it sends `{"v":1,"type":"tunnel-open"}` on both tunnels and from then passes each frame to
+  the other side unchanged. Only the room can send these two frames: signaling passes on `hello`, `offer`, `answer` and
+  `ice` only.
+- Switching to the tunnel is a new transport, like the relay retry: each side rotates its channel nonce and announces it
+  in a new hello before it opens the tunnel, so the frame keys are fresh. Pairing (section 4), the safety code and every
+  approval work exactly as on a DataChannel.
+- The room counts the bytes each side sends and receives and charges them to the same monthly relay allowance as the
+  TURN relay, every 4 MiB and when the tunnel closes; with the allowance used up it closes both tunnels. A frame is at most
+  1 MiB. Either side closing its tunnel closes the other.
+
 ## 8. What the services see
 
 | Service | Sees | Does not see |
 | --- | --- | --- |
 | Signaling (Cloudflare Workers, Durable Objects) | room IDs, hello messages (device descriptors, nonces, flags), SDP and ICE candidates (so IP addresses), timing; for six-digit codes also the invitation nonce and host descriptor | the device private keys; any frame key; file contents, names, text |
 | TURN relay (Cloudflare Realtime TURN), only when a direct path fails | the two IP addresses, how many bytes pass, when | anything inside the DTLS-encrypted DataChannel |
+| WebSocket tunnel (Cloudflare Workers, Durable Objects), only when the relay fails too | the two IP addresses, how many bytes pass, when, frame sizes and timing | the frame keys; file contents, names, text (the frames are encrypted as on the DataChannel) |
 
 ### Device proof for paid relay (since 2.19.0)
 
@@ -215,6 +236,9 @@ any key that opens frames.
 used only when both sides send it.
 
 ## 10. Change log
+
+- 2026-11-04 (paironce.com 2.22.0): the WebSocket tunnel (section 7.1), a last way through for networks that let only web traffic out.
+  New optional hello flag `tunnel: 1`; peers without it never use the tunnel.
 
 - 2026-10-23: `privateMeta` — `file-meta` no longer repeats the file name and type when the receiver asks in its encrypted
   decision.
