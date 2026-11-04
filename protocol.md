@@ -1,4 +1,4 @@
-# PairOnce protocol 2.22.0 (2026-11-04)
+# PairOnce protocol 2.23.0 (2026-11-04)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
 browsers find each other; when a direct path fails, a TURN relay forwards their traffic, and when that fails too, the
@@ -8,7 +8,7 @@ This document describes what goes over the wire. It is written so that someone c
 that someone can run a PairOnce service. Licensed CC BY 4.0. The reference implementation of everything here is the
 `@paironce/core` package (Apache-2.0).
 
-This version describes paironce.com 2.22.0, in production since 2026-11-04; `@paironce/core` is unchanged since 2.1.0. Corrections are
+This version describes paironce.com 2.23.0, in production since 2026-11-04; `@paironce/core` is unchanged since 2.1.0. Corrections are
 welcome as issues or pull requests.
 
 ## 1. Devices
@@ -208,6 +208,15 @@ the same frames (sections 5.3 and 6), encrypted with the same frame keys, in the
   TURN relay, every 4 MiB and when the tunnel closes; with the allowance used up it closes both tunnels. A frame is at most
   1 MiB. Either side closing its tunnel closes the other.
 
+### 7.2 Agents (since 2.23.0)
+
+An AI agent (the `paironce` CLI and its MCP server, see [agent-as-a-device.md](agent-as-a-device.md)) may send two more
+optional hello fields: `deviceKind: "agent"` and `forgetAfter: <seconds>` (3,600 to 2,592,000). The other device then
+marks it "Agent" when it asks to be approved and in the saved devices, and removes it from the saved devices once it has
+not connected for `forgetAfter` seconds. The service keeps the flag for the life of the signaling socket and caps the
+agent's relay and tunnel use by the remaining allowance of the person's device it is connected to. Both fields only
+limit or mark a pairing; a device that leaves them out is treated as before.
+
 ## 8. What the services see
 
 | Service | Sees | Does not see |
@@ -236,6 +245,9 @@ any key that opens frames.
 used only when both sides send it.
 
 ## 10. Change log
+
+- 2026-11-04 (paironce.com 2.23.0): agents (section 7.2), hello fields `deviceKind` and `forgetAfter`. The room charges
+  tunnel bytes on the measured path, so they count whatever the relay provider.
 
 - 2026-11-04 (paironce.com 2.22.0): the WebSocket tunnel (section 7.1), a last way through for networks that let only web traffic out.
   New optional hello flag `tunnel: 1`; peers without it never use the tunnel.

@@ -1,6 +1,6 @@
 # Agent as a Device
 
-Design note, draft 1 (2026-11-04). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
+Design note, draft 2 (2026-11-04). Licensed CC BY 4.0. Status of each part is marked **Shipped** or **Proposed**.
 
 An AI agent that runs in a terminal or a cloud sandbox (Claude Code, Cursor, Codex, a CI job) can write files, run
 builds and read logs, but it cannot reach the person's phone: a finished build does not land on the phone, a photo of a
@@ -45,13 +45,14 @@ by its user; the private key never leaves that machine. A sandbox that is thrown
 `PAIRONCE_HOME` points into the sandbox. The person removes the agent from their device at any time, and the agent can
 `forget` the person's device.
 
-**Proposed (protocol 2.3).** Two optional hello fields, sent only by an agent:
+**Shipped (protocol 2.3, paironce.com 2.23.0, CLI 0.5).** Two optional hello fields, sent only by an agent:
 
 - `deviceKind: "agent"`. The person's device shows an "Agent" mark next to the name wherever devices are listed and in
   every approval.
 - `forgetAfter: <seconds>` (at most 30 days). The person's device removes the saved agent once it has not reconnected for
-  that long, so a sandbox that is gone does not stay in the list. `paironce mcp --ephemeral` would set it to one day and
-  keep the identity in a temporary folder.
+  that long, so a sandbox that is gone does not stay in the list. `paironce mcp --ephemeral` sets it to one day and
+  keeps the identity in a temporary folder. The MCP server always sends `deviceKind: "agent"`; the other commands send
+  it with `--agent`.
 
 Both fields only ever make a pairing more limited or more visible. An agent that leaves them out or lies about them gains
 nothing: it is then shown and kept like any other device, which is today's behaviour. Older pages drop the fields.
@@ -91,11 +92,11 @@ the protocol. A sandbox usually has no local network, so most agent connections 
 PairOnce Pro; a network has its own monthly cap), measured by the service for the tunnel. A connection where either device
 has Pro counts as Pro.
 
-**Proposed.** A fresh identity for every sandbox must not mean a fresh free allowance every time. Bytes already count
-against both devices of a connection, so an agent cannot use more of a person's device's allowance than that device has.
-In addition, a device that declares `deviceKind: "agent"` gets the allowance of the person's device it is connected to
-rather than its own, so throwaway identities add nothing. Agent-to-agent connections between two fresh identities stay
-within the network cap.
+**Shipped (paironce.com 2.23.0).** A fresh identity for every sandbox does not mean a fresh free allowance every time.
+Bytes already count against both devices of a connection, so an agent cannot use more of a person's device's allowance
+than that device has. In addition, a device that declares `deviceKind: "agent"` is capped by the remaining allowance of
+the person's device it is connected to, on the relay and on the tunnel, so throwaway identities add nothing.
+Agent-to-agent connections between two fresh identities stay within the network cap.
 
 ## 8. Threat model additions
 
@@ -127,7 +128,7 @@ within the network cap.
 | --- | --- | --- |
 | v0 | CLI: pair, send, text, receive | Shipped (CLI 0.1, 2026-11-04) |
 | v1 | MCP: send tools, `pair_device`, `receive_files`, device names; relay over TCP/TLS; the PairOnce tunnel and proxies | Shipped (CLI 0.4, paironce.com 2.22.0) |
-| v2 | `deviceKind`, `forgetAfter`, `--ephemeral`, the agent allowance rule | Proposed |
+| v2 | `deviceKind`, `forgetAfter`, `--ephemeral`, the agent allowance rule | Shipped (CLI 0.5, paironce.com 2.23.0) |
 | v3 | `request_file`, `request_photo`, `request_scan` | Proposed |
 | v4 | `watch_frames` | Proposed |
 
