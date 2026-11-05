@@ -1,4 +1,4 @@
-# PairOnce protocol 2.28.1 (2026-11-04)
+# PairOnce protocol 2.29.0 (2026-11-04)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
 browsers find each other; when a direct path fails, a TURN relay forwards their traffic, and when that fails too, the
@@ -16,7 +16,7 @@ welcome as issues or pull requests.
 Each browser makes one **device identity** the first time PairOnce opens:
 
 - an ECDH key pair on P-256, generated with Web Crypto as non-extractable and kept in IndexedDB;
-- a **device ID**, 16–128 characters of `[A-Za-z0-9_-]`, random;
+- a **device ID**, 16–128 characters of `[A-Za-z0-9_-]`: since 2.29.0 `k1_` and the first 24 characters of the base64url SHA-256 of `paironce-device-id-v1:<public key>`, and random before that;
 - a **device name**, 1–80 characters, shown to the other side (the person can rename it).
 
 The **device descriptor** `{ id, name, publicKey }` is public: `publicKey` is the raw uncompressed P-256 point (65 bytes,
