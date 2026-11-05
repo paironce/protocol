@@ -1,4 +1,4 @@
-# PairOnce protocol 2.29.2 (2026-11-04)
+# PairOnce protocol 2.30.0 (2026-11-04)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
 browsers find each other; when a direct path fails, a TURN relay forwards their traffic, and when that fails too, the
@@ -42,7 +42,8 @@ There are two ways to hand it over:
 
 1. **Link or QR code.** `https://paironce.com/?room=<room>#v=2&nonce=<b64url>&deviceId=…&deviceName=…&devicePublicKey=…`.
    Everything after `#` is the URL fragment: browsers do not send it to any server. The joining device learns the host's
-   public key from the link itself.
+   public key from the link itself. Anyone can send a link, so since 2.30.0 the page asks the person before it joins; a
+   room link (`#join=<code>`) asks too.
 2. **Six-digit code.** The host page publishes the invitation (room, nonce, host descriptor, expiry) to the signaling
    service, which returns a six-digit code valid once, for about ten minutes. The joining device sends the code and gets
    the invitation back. Lookups are rate limited per network. Here the service *does* see the nonce and the host's

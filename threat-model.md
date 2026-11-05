@@ -1,4 +1,4 @@
-# PairOnce threat model 2.29.2 (2026-10-23)
+# PairOnce threat model 2.30.0 (2026-10-23)
 
 What PairOnce protects, from whom, and where the protection stops. Read with the protocol description (`protocol.md`).
 
@@ -49,12 +49,18 @@ IP addresses of both devices, when they connect, which rooms they use, device na
 transfers through the relay, and how often a device uses the relay (to apply its monthly allowance). Not file contents,
 names or text. Daily aggregate counts kept for operations contain no IP address or device ID.
 
+On the WebSocket tunnel (protocol 7.1) there is no DTLS around the frames, so the service also sees each file's size, its
+chunk count and transfer ID, and the timing of the frames. Contents, names and text stay encrypted under the frame keys.
+
 ## Limits (not protected)
 
 - **The endpoints.** Malware, a malicious browser extension, or someone with access to an unlocked device sees whatever
   that browser sees. Received files sit in the page's memory or the browser's private storage until saved.
 - **A person who skips the safety code** with six-digit pairing (see above).
 - **Traffic analysis.** Sizes and timing are visible to the network and the relay.
+- **Forward secrecy on the tunnel.** Frame keys come from the two devices' long-term keys. A data channel adds DTLS with
+  keys of its own for each connection; the tunnel does not, so someone who recorded tunnel traffic and later got a device's
+  private key could read that traffic.
 - **The web app itself.** The page is served by PairOnce each time; a compromised server could serve a malicious page.
   This is true of every web app. Mitigations: the core library is open and versioned, each production release names the
   core version it uses in a signed record, and the page uses a strict content security policy. A future goal is
