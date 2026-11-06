@@ -17,7 +17,7 @@ between can and cannot see.
 - [agent-as-a-device.md](agent-as-a-device.md): AI agents (Claude Code, Cursor, CI jobs) as paired devices: what works
   today with the [paironce CLI](https://github.com/paironce/cli) and its MCP server, and what is proposed next
 
-Version 2.32.7 describes paironce.com 2.32.7. The reference implementation is [@paironce/core](https://github.com/paironce/core).
+Version 2.32.8 describes paironce.com 2.32.8. The reference implementation is [@paironce/core](https://github.com/paironce/core).
 Questions and corrections are welcome as issues. Security problems: see [SECURITY](https://github.com/paironce/security/blob/main/SECURITY.md).
 
 ## License
