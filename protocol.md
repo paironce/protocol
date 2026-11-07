@@ -1,4 +1,4 @@
-# PairOnce protocol 2.32.11 (2026-11-04)
+# PairOnce protocol 2.33.0 (2026-11-04)
 
 PairOnce moves files and text between two browsers over a WebRTC DataChannel. A small signaling service helps the two
 browsers find each other; when a direct path fails, a TURN relay forwards their traffic, and when that fails too, the
